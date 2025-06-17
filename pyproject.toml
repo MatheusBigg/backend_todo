@@ -1,0 +1,47 @@
+[project]
+name = "skynet"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.14.1",
+    "fastapi[standard]>=0.115.11",
+    "psycopg2-binary>=2.9.10",
+    "pydantic>=2.10.6",
+    "python-dotenv>=1.0.1",
+    "sqlalchemy>=2.0.38",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "rich>=13.9.4",
+    "ruff>=0.9.9",
+    "taskipy>=1.14.1",
+]
+
+[tool.ruff]
+line-length = 79
+extend-exclude = ['migrations']
+
+[tool.ruff.lint]
+preview = true
+select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
+
+[tool.pytest.ini_options]
+pythonpath = "."
+addopts = '-p no:warnings'
+
+[tool.taskipy.tasks]
+lint = 'ruff check'
+pre_format = 'ruff check --fix'
+format = 'ruff format'
+run = 'fastapi dev app/app.py'
+pre_test = 'task lint'
+test = 'pytest -s -vv'
+post_test = 'coverage html'
