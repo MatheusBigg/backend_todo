@@ -8,10 +8,11 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
+from app.core.security import get_password_hash
+from app.core.settings import Settings
 from app.db.database import get_session
 from app.main import app
 from app.models.models import User, table_registry
-from app.security import get_password_hash
 
 
 @pytest.fixture
@@ -81,7 +82,7 @@ def user(session: Session):
 @pytest.fixture
 def token(client, user):
     response = client.post(
-        '/token',
+        '/api/v1/auth/token',
         data={
             'username': user.email,
             'password': user.clean_password,
@@ -89,3 +90,8 @@ def token(client, user):
     )
     assert response.status_code == HTTPStatus.OK
     return response.json()['access_token']
+
+
+@pytest.fixture
+def settings():
+    return Settings()
