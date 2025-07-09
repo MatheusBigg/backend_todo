@@ -13,5 +13,5 @@ app.include_router(users.router)
 
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Message)
-def root():
+async def root():
     return {'message': 'Welcome to Skynet!'}

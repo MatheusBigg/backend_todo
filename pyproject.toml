@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aiosqlite>=0.21.0",
     "alembic>=1.14.1",
     "fastapi[standard]>=0.115.11",
     "psycopg2-binary>=2.9.10",
@@ -13,13 +14,14 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "pyjwt>=2.10.1",
     "python-dotenv>=1.0.1",
-    "sqlalchemy>=2.0.38",
+    "sqlalchemy[asyncio]>=2.0.38",
     "tzdata>=2025.2",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
+    "pytest-asyncio>=1.0.0",
     "pytest-cov>=6.2.1",
     "rich>=13.9.4",
     "ruff>=0.9.9",
@@ -41,6 +43,7 @@ quote-style = 'single'
 [tool.pytest.ini_options]
 pythonpath = "."
 addopts = '-p no:warnings'
+asyncio_default_fixture_loop_scope = 'function'
 
 [tool.taskipy.tasks]
 lint = 'ruff check'
@@ -50,3 +53,6 @@ run = 'fastapi dev app/main.py'
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=app -vv'
 post_test = 'coverage html'
+
+[tool.coverage.run]
+concurrency = ["thread", "greenlet"]

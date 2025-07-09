@@ -3,9 +3,10 @@ from datetime import datetime
 from http import HTTPStatus
 
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
-from sqlalchemy.orm import Session
+from sqlalchemy import event
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
 
 from app.core.security import get_password_hash
@@ -27,21 +28,24 @@ def client(session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def session():
-    engine = create_engine(  # Cria conexao com o db
-        'sqlite:///:memory:',
+@pytest_asyncio.fixture
+async def session():
+    engine = create_async_engine(  # Cria conexao com o db
+        'sqlite+aiosqlite:///:memory:',
         connect_args={'check_same_thread': False},
         poolclass=StaticPool,
     )
 
-    table_registry.metadata.create_all(engine)  # Cria as tabelas no db
+    async with engine.begin() as conn:
+        await conn.run_sync(table_registry.metadata.create_all)
 
-    with Session(engine) as session:
-        yield session  # abre sessao de conexao entro o codigo e o db
-
-    table_registry.metadata.drop_all(engine)
-    engine.dispose()
+    try:
+        async with AsyncSession(engine, expire_on_commit=False) as session:
+            yield session
+    finally:
+        async with engine.begin() as conn:
+            await conn.run_sync(table_registry.metadata.drop_all)
+        await engine.dispose()
 
 
 @contextmanager
@@ -62,8 +66,8 @@ def mock_db_time():
     return _mock_db_time
 
 
-@pytest.fixture
-def user(session: Session):
+@pytest_asyncio.fixture
+async def user(session: AsyncSession):
     password = 'testpassword'
     user = User(
         username='testuser',
@@ -71,8 +75,8 @@ def user(session: Session):
         password=get_password_hash(password),
     )
     session.add(user)
-    session.commit()
-    session.refresh(user)
+    await session.commit()
+    await session.refresh(user)
 
     user.clean_password = password
 
