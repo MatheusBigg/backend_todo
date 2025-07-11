@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Annotated
+from typing import Annotated, TypeAlias
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
@@ -17,8 +17,8 @@ from app.schemas.schemas import Token
 
 router = APIRouter(prefix='/api/v1/auth', tags=['auth'])
 
-OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
-Session = Annotated[AsyncSession, Depends(get_session)]
+OAuth2Form: TypeAlias = Annotated[OAuth2PasswordRequestForm, Depends()]
+Session: TypeAlias = Annotated[AsyncSession, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 

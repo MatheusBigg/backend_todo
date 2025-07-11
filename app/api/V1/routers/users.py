@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Annotated
+from typing import Annotated, TypeAlias
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -22,7 +22,7 @@ from app.schemas.schemas import (
 
 router = APIRouter(prefix='/api/v1/users', tags=['users'])
 
-Session = Annotated[AsyncSession, Depends(get_session)]
+Session: TypeAlias = Annotated[AsyncSession, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 FilterPage = Annotated[FilterPage, Query()]
 
