@@ -1,0 +1,73 @@
+Docker e postgres:
+
+Instalar psycopg:
+uv add "psycopg[binary]"
+
+> 1. Criar e Rodar PostgreSQL no Docker - Terminal:
+docker run -d \
+  --name app_database \
+  -e POSTGRES_USER=app_user \
+  -e POSTGRES_PASSWORD=app_password \
+  -e POSTGRES_DB=app_db \
+  -p 5432:5432 \
+  postgres
+
+> 2. No .env (ou onde define DATABASE_URL):
+DATABASE_URL="postgresql+psycopg://app_user:app_password@localhost:5432/app_db"
+
+Ajustar alembic.ini:
+sqlalchemy.url = postgresql+psycopg://app_user:app_password@localhost:5432/app_db
+
+
+> 3. Fazer as migrações com Alembic - Terminal:
+uv run alembic upgrade head
+
+
+> 4. Refatorar código:
+uv add --group dev testcontainers
+
+conftest.py:
+async def session() -> sera quebrada em duas:
+
+1 - somente engine, onde vai criar o container com a imagem do postgres
+e manter ela durante toda a sessao de testes
+
+2 - alterar para usar o banco de produção e
+usar a testcontainers para subir containers para os testes
+
+
+> 5. Criar o Dockerfile e o compose.yaml
+
+> 6. entrypoint.sh
+após criar:
+chmod +x entrypoint.sh
+e adicionar no compose.yaml
+
+> 7. docker compose up --build
+Builda e sobe a aplicação + banco de dados
+Ctrl+C = Stop
+docker compose down = remove tudo
+
+para refazer o container baste rodar novamente o:
+docker compose up --build
+
+remover o aiosqlite pois nao usaremos migrações
+
+
+
+
+Testar conexão e ver dados
+Entrar no banco:
+docker exec -it app_database psql -U app_user -d app_db
+
+Listar tabelas:
+\dt
+
+Listar modelos:
+\dT
+
+Ver dados:
+SELECT * FROM todos;
+
+Sair:
+\q
