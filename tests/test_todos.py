@@ -2,9 +2,8 @@ from http import HTTPStatus
 
 import factory.fuzzy
 import pytest
-from sqlalchemy import select
 
-from app.models.models import Todo, TodoState, User
+from app.models.models import Todo, TodoState
 
 
 class TodoFactory(factory.Factory):
@@ -39,20 +38,49 @@ def test_create_todo(client, token, mock_db_time):
     }
 
 
-@pytest.mark.asyncio
-async def test_create_todo_error(session, user: User):
-    todo = Todo(
-        title='Test Todo',
-        description='Test Desc',
-        state='test',
-        user_id=user.id,
+# Teste capta erro na inserção do banco de dados
+# @pytest.mark.asyncio
+# async def test_create_todo_error(session, user: User):
+#     todo = Todo(
+#         title='Test Todo',
+#         description='Test Desc',
+#         state='test',
+#         user_id=user.id,
+#     )
+
+#     session.add(todo)
+#     await session.commit()
+
+#     with pytest.raises(LookupError):
+#         await session.scalar(select(Todo))
+
+
+# Melhoria: Teste capta erro antes de inserir no banco de dados
+def test_create_todo_invalid_state_api(client, token):
+    response = client.post(
+        '/api/v1/todos/',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'title': 'Test',
+            'description': 'Desc',
+            'state': 'invalid_state',
+        },
     )
+    # Erro de validação
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
-    session.add(todo)
-    await session.commit()
+    json_response = response.json()
+    assert 'detail' in json_response
+    assert 'msg' in json_response['detail'][0]
 
-    with pytest.raises(LookupError):
-        await session.scalar(select(Todo))
+    # Ajuste a asserção para verificar a nova mensagem de erro
+    expected_message_part = "Input should be"
+    assert expected_message_part in json_response['detail'][0]['msg']
+
+    # valores do Enum estão na mensagem
+    enum_values = [e.value for e in TodoState]
+    for value in enum_values:
+        assert f"'{value}'" in json_response['detail'][0]['msg']
 
 
 @pytest.mark.asyncio
