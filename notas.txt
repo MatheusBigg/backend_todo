@@ -71,3 +71,16 @@ SELECT * FROM todos;
 
 Sair:
 \q
+
+
+#############################
+Pipeline GitHub Actions
+> Garante que o código do seu repositório seja copiado para o executor do GitHub Actions.
+> Sem isso, o pipeline não consegue acessar o seu pyproject.toml
+steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+  
+#Terminal
+> Seta o arquivo .env com os segredos do repositorio pra o Git utilizar
+gh secret set -f .env 
