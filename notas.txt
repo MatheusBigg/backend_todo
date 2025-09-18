@@ -1,3 +1,4 @@
+#############################
 Docker e postgres:
 
 Instalar psycopg:
@@ -54,8 +55,6 @@ docker compose up --build
 remover o aiosqlite pois nao usaremos migrações
 
 
-
-
 Testar conexão e ver dados
 Entrar no banco:
 docker exec -it app_database psql -U app_user -d app_db
@@ -84,3 +83,12 @@ steps:
 #Terminal
 > Seta o arquivo .env com os segredos do repositorio pra o Git utilizar
 gh secret set -f .env 
+
+
+#############################
+Deploy -> Fly.io
+
+flyctl atuh login
+flyctl launch --no-deploy
+Configurar no site eh melhor (escolher opção N)
+
